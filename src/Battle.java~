@@ -1,0 +1,130 @@
+/* Primarily implemented by Farren Wang
+ * CS230 Final Project
+ * May 2015
+ * 
+ * This class contains the functionality of the battle,
+ * including using moves and taking damage, as well as checking
+ * whether the battle is over.
+ * 
+ * This class is able to change the gold amount in a map class.
+ */
+
+public class Battle{
+  
+  private Pokemon yours, wild;
+  private Map location;
+  
+  public Battle(Pokemon yours, Pokemon wild, Map location){
+    this.yours = yours;
+    this.wild = wild;
+    this.location = location;
+    
+    try{
+      wild.populateMoves();
+    }
+    catch(Exception e){
+      System.out.println(e);
+    }
+  }
+  
+  public Pokemon getYours(){
+    return this.yours;
+  }
+  
+  public Pokemon getWild(){
+    return this.wild;
+  }
+  
+  public int getGold(){
+    return location.getGold();
+  }
+  
+  public void increaseGold(int income){
+    location.increaseGold(income);
+  }
+  
+  //other methods
+  
+  /* healing with gold allows a player
+   * to heal their pokemon for 50HP with 
+   * 10 gold, it's like using a potion
+   */
+  public void healWithGold(){
+    location.increaseGold(-10);
+    yours.changeHP(50);
+  }
+  
+  /* returns true if first type has an advantage 
+   * over the 2nd and false otherwise
+   * 
+   * if a pokemon has a type advantage, their
+   * moves will be super effective against the 
+   * other pokemon
+   */
+  public boolean isTypeAdvantage(String type1, String type2){
+    if (type1=="Normal"){
+      return false;
+    }
+    else if (type1=="Grass"&& type2=="Water"){
+      return true;
+    }
+    else if (type1=="Fire"&& type2=="Grass"){
+      return true;
+    }
+    else if (type1=="Water"&& type2=="Fire"){
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+  
+  /* wild pokemon deals damage, returns the name of the 
+   * attack used.
+   */
+  
+  //wild pokemon randomly chooses a move and attacks
+  public String wildPokemonAttacks(){
+    String[] wildMoves = wild.getMoves();
+    //random int for index of move to be used
+    int randomNum = (int)(Math.random()*3);
+    int damage = wild.getDamage(wildMoves[randomNum]);
+    if (isTypeAdvantage(wild.getType(),yours.getType())==true){
+      damage = damage * 2;
+    }
+    yours.changeHP(-damage);
+    return wildMoves[randomNum];
+  }
+  
+  //attacks the wild pokemon
+  public void yoursAttacks(String move){
+    int damage = yours.getDamage(move);
+    if (isTypeAdvantage(yours.getType(),wild.getType())==true){
+      damage = damage * 2;
+    }
+    wild.changeHP(-damage);
+  }
+  
+  public boolean yoursFainted(){
+    return yours.getHP()<=0;
+  }
+  
+  public boolean wildFainted(){
+    return wild.getHP()<=0;
+  }
+  
+  //checks if battle is over
+  public boolean isBattleOver(){
+    return wildFainted()==true || yoursFainted()==true;
+  }
+  
+  //you win if your pokemon has not fainted by the wild one has
+  public boolean youWin(){
+    return wildFainted()==true && yoursFainted()==false;
+  }
+  
+  //tie if both pokemon have fainted
+  public boolean isTie(){
+    return wildFainted()==true || yoursFainted()==true;
+  }
+}

@@ -1,0 +1,8 @@
+VineWhip 
+BulletSeed Absorb
+ 
+RazorLeaf 
+LeechSeed 
+MegaDrain 
+PetalDance 
+SolarBeam 

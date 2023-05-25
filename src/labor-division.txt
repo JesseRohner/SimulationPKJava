@@ -1,0 +1,20 @@
+Lily and Farren Wang
+CS230 Final Project
+Pokemon Battle 2.0
+Phase 3
+
+Farren wrote the following classes:
+Pokemon
+Battle
+BattleGUIPanel
+She also incorporated and edited all the text files from last semester's project containing moves, Pokemon, and Pokemon type.
+
+Lily wrote the following classes:
+Map
+MapPanel
+PokemonStartup
+PokemonStartupPanel
+This includes combining what Farren and she did together.
+
+Both members had input on the general idea and plot of the program initially and worked out the specifics together. We also discussed and decided on general
+aesthetics (colors, fonts, layout, etc.). We also gave suggestions and guidance to each other throughout the whole process when necessary.

@@ -1,0 +1,19 @@
+Bulbasaur Grass
+ Charmander Fire 
+Squirtle Water
+ Rattata Normal
+ Vulpix Fire 
+Jigglypuff Normal 
+Oddish Grass
+ Meowth Normal 
+Growlithe Fire 
+Bellsprout Grass 
+Ponyta Fire Farfetch'd Normal
+ Seel Water
+ Krabby Water 
+Exeggcute Grass 
+Tangela Grass 
+Goldeen Water
+ Staryu Water 
+Magmar Fire
+ Eevee Normal

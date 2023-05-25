@@ -1,0 +1,260 @@
+/* Primarily implemented by Farren Wang
+ * CS230 Final Project
+ * May 2015
+ * BattleGUIPanel.java
+ * 
+ * This GUI uses the battle class to present the pokemon battle
+ * and allows that player to interact with it.
+ */
+
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import java.io.*;
+
+public class BattleGUIPanel extends JPanel{
+  
+  private final Color BKCOLOR = new Color(186,212,164);  // Color of map
+  private final Color COMMANDS_COLOR = new Color(116,168,120);
+  private Pokemon starter, wild;
+  private Battle encounter;
+  private JRadioButton[] moves;
+  private JButton fightButton, runButton, goldButton, otherButton; 
+  private JPanel battleVisual, commands;
+  private JLabel yourHP, wildHP, yourPoke, wildPoke, commentary, gold;
+  private ButtonGroup bg;
+  private String[] yourMoves;
+  private JFrame frame;
+  
+  //takes a Jframe so that the panel may be closed without closing the JFrame
+  public BattleGUIPanel (Battle encounter, JFrame frame){
+    this.frame = frame;
+    this.encounter = encounter;
+    starter = encounter.getYours();
+    wild = encounter.getWild();
+    
+    //custom font
+    Font myFont = null;
+    try {
+      File fontFile = new File("Pokemon GB.ttf");
+      try {
+        myFont = Font.createFont(Font.TRUETYPE_FONT, fontFile).deriveFont(Font.PLAIN, 22f);
+      } catch (java.awt.FontFormatException e) {
+        System.out.println(e);
+      }} catch (java.io.IOException e) {
+        System.out.println(e);
+      }
+      GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+      ge.registerFont(myFont);
+      
+      //button group so only one move may be selected
+      bg = new ButtonGroup();
+      moves = new JRadioButton[4];
+      yourMoves = starter.getMoves();
+      
+      //creating radiobuttons of moves and sets the font
+      for (int i = 0; i<4; i++){
+        moves[i] = new JRadioButton(yourMoves[i]);
+        moves[i].setFont(myFont);
+        bg.add(moves[i]);
+      }
+      
+      /* getting the images of the pokemon and their healths and sets
+       * them on labels
+       */
+      ImageIcon yourPokePic = starter.getImage();
+      ImageIcon wildPokePic = wild.getImage();
+      yourHP = new JLabel(starter.getName() + "'s HP: " + starter.getHP());
+      yourHP.setFont(myFont);
+      wildHP = new JLabel(wild.getName() + "'s HP: " + wild.getHP());
+      wildHP.setFont(myFont);
+      yourPoke = new JLabel(yourPokePic);
+      wildPoke = new JLabel(wildPokePic);
+      
+      //creating panel for visual part, not interactive
+      battleVisual = new JPanel();
+      battleVisual.setBackground(BKCOLOR);
+      battleVisual.setLayout(new GridBagLayout());
+      GridBagConstraints c = new GridBagConstraints();
+      battleVisual.add(wildHP);
+      battleVisual.add(wildPoke);
+      c.gridy=1;
+      battleVisual.add(yourPoke,c);
+      battleVisual.add(yourHP,c);   
+      
+      /* interactive part of the panel, where there will 
+       * be options for the moves as well as buttons
+       */
+      commands = new JPanel();
+      commands.setBackground(COMMANDS_COLOR);
+      commands.setLayout(new GridLayout(2,8));
+      
+      //creating buttons
+      fightButton = new JButton ("Use this move!"); //uses move/attacks
+      goldButton = new JButton ("Heal with Gold"); //heals your Pokemon
+      runButton = new JButton ("Run!"); //escapes from the battle, closes the panel
+      otherButton = new JButton ("Change My Pokemon"); //dummy button
+      gold = new JLabel("You have " + encounter.getGold() + " gold. Healing costs 10 gold.");
+      commentary = new JLabel("What would you like to do?");
+      
+      //sets fonts to the Pokemon font
+      fightButton.setFont(myFont);
+      goldButton.setFont(myFont);
+      runButton.setFont(myFont);
+      otherButton.setFont(myFont);
+      gold.setFont(myFont);
+      commentary.setFont(myFont);
+      
+      // Adds functionality to the buttons
+      ButtonListener listener = new ButtonListener();
+      fightButton.addActionListener(listener);
+      goldButton.addActionListener(listener);
+      runButton.addActionListener(listener);
+      otherButton.addActionListener(listener);
+      
+      //adding the buttons and labels to the interactive panel
+      commands.add(moves[0]);
+      commands.add(moves[1]);
+      commands.add(fightButton);
+      commands.add(otherButton);
+      commands.add(moves[2]);
+      commands.add(moves[3]);
+      commands.add(goldButton);
+      commands.add(runButton);
+      
+      /* adds command panel with interactions into 
+       * the visual panel
+       */
+      c.gridy=5;
+      c.gridwidth = 2;
+      
+      battleVisual.add(commands,c);
+      c.gridy=6;
+      battleVisual.add(gold,c);
+      c.gridy=7;
+      battleVisual.add(commentary,c);
+      add(battleVisual);
+      
+  }
+  
+  private class ButtonListener implements ActionListener{
+    
+    public void actionPerformed (ActionEvent event){
+      //leaves battle
+      if (event.getSource() == runButton){ 
+        frame.dispose();
+      }
+      //nothing really happens with this button
+      else if(event.getSource() == otherButton){
+        commentary.setText("Sorry, you've already picked a starter!");
+      }
+      //heals pokemon with gold if player has enough gold
+      else if(event.getSource() == goldButton){
+        if (encounter.getGold()>=10){
+          //can heal after a battle has ended
+          if (encounter.isBattleOver()==true){
+            encounter.healWithGold();
+            commentary.setText("Yes you should heal your pokemon after a battle.");
+          }
+          //wild pokemon battles as you heal your pokemon
+          else{
+            encounter.healWithGold();
+            gold.setText("You have " + encounter.getGold() + " gold. Healing costs 10 gold.");
+            yourHP.setText(starter.getName() + "'s HP: " + starter.getHP());
+            String attack = encounter.wildPokemonAttacks();
+
+            commentary.setText("You've healed your Pokemon! The wild " + wild.getName() + " used " + attack + ". ");
+          }
+        }
+        //can't heal if you don't have enough money
+        else{
+          commentary.setText("You don't have enough money.");
+        }
+      }
+      else if (event.getSource()==fightButton){
+        for (int i =0; i<4; i++){
+          //only one radiobutton should be selected
+          if (moves[i].isSelected()){
+            encounter.yoursAttacks(yourMoves[i]);
+            String attack = encounter.wildPokemonAttacks();
+            String typeComment = "";
+            commentary.setText("Your " + starter.getName() + " used " + yourMoves[i] + 
+                               ". " + typeComment + " The wild " + wild.getName() + " used " + attack + ". ");
+            yourHP.setText(starter.getName() + "'s HP: " + starter.getHP());
+            wildHP.setText(wild.getName() + "'s HP: " + wild.getHP());
+          }
+        }
+        
+        if (encounter.isBattleOver()==true){
+          //if the player wins, they receive 50 gold
+          if (encounter.youWin()==true){
+            encounter.increaseGold(50);
+            runButton.setText("Onwards!");
+            commentary.setText("You have won this battle and acquired 50 gold!");
+            fightButton.setEnabled(false);
+          }
+          //if there is a tie, the player receives no gold, but their pokemon is healed
+          else if (encounter.isTie()==true){
+            runButton.setText("Leave");
+            commentary.setText("Both pokemon have fainted. You heal yours with the prize money.");
+            encounter.increaseGold(20);
+            encounter.healWithGold();
+            encounter.healWithGold();
+            goldButton.setEnabled(false);
+            fightButton.setEnabled(false);
+          }
+          //if the player has lost the battle...
+          else{
+            //if the player has enough gold, they lose 30
+            if (encounter.getGold()>=10){
+              commentary.setText("You have lost the battle spend 30 gold to heal your Pokemon. Run Run Run!");
+              runButton.setText("RUNN AWAYY");
+              //heals pokemon's health by adding 20 gold and using it on heal
+              encounter.increaseGold(20);
+              encounter.healWithGold();
+              encounter.healWithGold();
+              encounter.increaseGold(-30);
+              fightButton.setEnabled(false);
+              goldButton.setEnabled(false);
+            }
+            //if the player has less than 30 gold, they are given a little help
+            else {
+              commentary.setText("You have lost the battle, but you find a potion and continue on.");
+              //heals pokemon by 50 health by adding 10 gold and using it. 
+              encounter.increaseGold(10);
+              encounter.healWithGold();
+              runButton.setText("RUNN AWAYY");
+              fightButton.setEnabled(false);
+              goldButton.setEnabled(false);
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  public static void main (String[] args){
+//    Pokemon a = new Pokemon ("Charmander", "Fire");
+//    Pokemon b = new Pokemon ("Meowth", "Normal");
+//    Battle test = new Battle (a,b, 400);
+//    try{
+//      a.populateMoves();
+//      b.populateMoves();
+//    }
+//    catch (Exception e){
+//      System.out.println(e);
+//    }
+//    JFrame frame = new JFrame ("A Battle");
+//    frame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
+//    
+//    frame.getContentPane().add(new BattleGUIPanel(test));
+//    
+//    frame.pack();
+//    frame.setVisible(true);
+//    
+    /* The above testing code was used for testing before the battle
+     * class took a map parameter.
+     */
+    
+  }
+}

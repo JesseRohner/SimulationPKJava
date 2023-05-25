@@ -1,0 +1,7 @@
+Ember 
+Smokescreen FireSpin 
+Flamethrower 
+FirePunch 
+FlameCharge 
+FlameWheel 
+BlastBurn
